@@ -1,5 +1,7 @@
 RaceDay — Part 1: System Planning and Database
+
 PROG6212 POE
+
 System Description
 
 RaceDay is a full-stack web-based event management system designed for the South African road running, walking, and cycling community. It allows event organisers to create and manage races and categories, and allows participants to browse events, enrol in categories, and track their personal results.
@@ -17,6 +19,7 @@ Role-based access will be enforced at the API level in Part 2 and reflected cons
 
 Contents of /docs
 File	Description
+
 RaceDay_ERD.png	Entity Relationship Diagram — 6 entities (Roles, Users, Events, Categories, Enrolments, Results), showing all primary keys, foreign keys, and cardinalities.
 RaceDay_API_Endpoint_Plan.md	Full table of every planned API endpoint, covering Authentication, User Profile, Events, Categories, Event Enrolments, and Results.
 RaceDay_Database_Script.sql	SQL script that creates and seeds the RaceDay database schema in SQL Server (SSMS), matching the ERD exactly.
@@ -25,9 +28,7 @@ Design Note
 The register endpoint in the API plan accepts a role field as part of its request body, while Roles is implemented as a separate lookup table (not a plain string column) in the ERD and SQL script. This is not a mismatch — the API resolves the submitted role name to the correct RoleId before inserting the new user. This design keeps roles extensible (e.g. adding an Admin role later) without changing the Users table structure.
 
 CI/CD
-<!-- Insert a screenshot of a successful (green) GitHub Actions build here before submission -->
 
-![CI/CD Build Status]
 <img width="1911" height="902" alt="image" src="https://github.com/user-attachments/assets/318c7f37-614c-4610-b054-b3fb6ac8a39f" />
 
 Video Walkthrough
