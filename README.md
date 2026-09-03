@@ -27,11 +27,10 @@ The register endpoint in the API plan accepts a role field as part of its reques
 CI/CD
 <!-- Insert a screenshot of a successful (green) GitHub Actions build here before submission -->
 
-![CI/CD Build Status](docs/ci-success-screenshot.png)
+![CI/CD Build Status]
+<img width="1911" height="902" alt="image" src="https://github.com/user-attachments/assets/318c7f37-614c-4610-b054-b3fb6ac8a39f" />
 
 Video Walkthrough
-<!-- Insert your unlisted YouTube link here -->
-
-Video: [INSERT UNLISTED YOUTUBE LINK HERE]
+https://youtu.be/xwXTqeLnMao 
 
 The video walks through the planning documents, the ERD design decisions, the endpoint plan choices, and runs the SQL script live in SQL Server Management Studio (SSMS)
