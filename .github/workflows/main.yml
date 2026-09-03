@@ -1,0 +1,51 @@
+name: Validate Docs Folder
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check /docs folder exists
+        run: |
+          if [ ! -d "docs" ]; then
+            echo "ERROR: /docs folder is missing."
+            exit 1
+          fi
+          echo "docs folder found."
+
+      - name: Check for ERD file
+        run: |
+          if ! find docs -iname "*erd*.png" -o -iname "*erd*.pdf" | grep -q .; then
+            echo "ERROR: No ERD image (png/pdf) found in /docs."
+            exit 1
+          fi
+          echo "ERD file found."
+
+      - name: Check for API endpoint plan
+        run: |
+          if ! find docs -iname "*endpoint*plan*.md" -o -iname "*endpoint*plan*.pdf" | grep -q .; then
+            echo "ERROR: No API endpoint plan (md/pdf) found in /docs."
+            exit 1
+          fi
+          echo "Endpoint plan file found."
+
+      - name: Check for SQL script
+        run: |
+          if ! find docs -iname "*.sql" | grep -q .; then
+            echo "ERROR: No SQL script (.sql) found in /docs."
+            exit 1
+          fi
+          echo "SQL script found."
+
+      - name: All required files present
+        run: echo "Docs folder structure is valid."
