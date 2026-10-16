@@ -35,3 +35,8 @@ Video Walkthrough
 https://youtu.be/xwXTqeLnMao 
 
 The video walks through the planning documents, the ERD design decisions, the endpoint plan choices, and runs the SQL script live in SQL Server Management Studio (SSMS)
+
+
+Part 2 - Build and Test API
+
+<img width="1873" height="648" alt="ci-green-build" src="https://github.com/user-attachments/assets/b74da17b-dff4-4098-a5ba-c467629f4631" />
