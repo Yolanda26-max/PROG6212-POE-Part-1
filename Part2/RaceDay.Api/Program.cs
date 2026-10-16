@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RaceDay.Api.Data;
+using RaceDay.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,9 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
+
+// ---------- Our own services ----------
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 // ---------- Controllers ----------
 builder.Services.AddControllers();
@@ -74,7 +78,7 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
-    // Shows the descriptions we write on controllers in the Swagger page (used once we add them)
+    // Shows the descriptions we write on controllers in the Swagger page
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     if (File.Exists(xmlPath))
@@ -93,7 +97,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-
+// Order matters: first check who you are, then check what you're allowed to do
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -101,5 +105,5 @@ app.MapControllers();
 
 app.Run();
 
-
+// Lets the unit test project start the API in memory later
 public partial class Program { }
