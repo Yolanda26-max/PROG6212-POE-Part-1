@@ -1,0 +1,68 @@
+﻿@model RaceDay.Web.Models.ProfileViewModel
+@{
+    ViewData["Title"] = "My profile";
+
+    var initials = string.Concat(
+        (Model.FullName ?? "")
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Take(2)
+            .Select(p => char.ToUpper(p[0])));
+    if (string.IsNullOrEmpty(initials)) { initials = "?"; }
+}
+
+<h1 class="mb-1">My profile</h1>
+<p class="text-muted mb-4">View and update your personal information.</p>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm text-center">
+            <div class="card-body p-4">
+                @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
+                {
+                    <img src="@Model.ProfilePictureUrl" alt="Profile picture"
+                         style="width:140px;height:140px;object-fit:cover;border-radius:50%;" class="mb-3" />
+                }
+                else
+                {
+                    <div class="d-flex align-items-center justify-content-center mx-auto mb-3 text-white fw-bold"
+                         style="width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,#0b1f33,#ff5a1f);font-size:3rem;">
+                        @initials
+                    </div>
+                }
+                <h4 class="mb-1">@Model.FullName</h4>
+                <span class="badge rd-role-badge">@Model.Role</span>
+                <p class="text-muted small mt-3 mb-0">Member since @Model.CreatedAt.ToString("dd MMM yyyy")</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h5 class="mb-3">Personal information</h5>
+
+                <form asp-action="Profile" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" autocomplete="name" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" autocomplete="email" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

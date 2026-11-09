@@ -93,5 +93,74 @@ namespace RaceDay.Web.Controllers
 
             return View(rows);
         }
+
+        // ---------- PROFILE ----------
+
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var result = await _api.GetAsync<ProfileDto>("api/users/me");
+
+            if (!result.Success || result.Data == null)
+            {
+                TempData["Error"] = result.Error ?? "We couldn't load your profile.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View(ToViewModel(result.Data));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Profile(ProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                await FillReadOnlyDetailsAsync(model);
+                return View(model);
+            }
+
+            var result = await _api.PutAsync<ProfileDto>("api/users/me", new UpdateProfileRequestDto
+            {
+                FullName = model.FullName,
+                Email = model.Email
+            });
+
+            if (!result.Success || result.Data == null)
+            {
+                ModelState.AddModelError(string.Empty, result.Error ?? "We couldn't save your changes.");
+                await FillReadOnlyDetailsAsync(model);
+                return View(model);
+            }
+
+            // Keep the name in the menu up to date
+            HttpContext.Session.SetString(AccountController.NameKey, result.Data.FullName);
+
+            TempData["Success"] = "Your profile was updated.";
+            return RedirectToAction(nameof(Profile));
+        }
+
+        // ---------- Helpers ----------
+
+        private static ProfileViewModel ToViewModel(ProfileDto p) => new()
+        {
+            FullName = p.FullName,
+            Email = p.Email,
+            Role = p.Role,
+            CreatedAt = p.CreatedAt,
+            ProfilePictureUrl = p.ProfilePictureUrl
+        };
+
+        // If the form is shown again after an error, the read-only parts need refilling
+        private async Task FillReadOnlyDetailsAsync(ProfileViewModel model)
+        {
+            var current = await _api.GetAsync<ProfileDto>("api/users/me");
+            if (current.Success && current.Data != null)
+            {
+                model.Role = current.Data.Role;
+                model.CreatedAt = current.Data.CreatedAt;
+                model.ProfilePictureUrl = current.Data.ProfilePictureUrl;
+            }
+        }
     }
 }
