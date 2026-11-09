@@ -19,9 +19,19 @@ public class BlobStorageService : IBlobStorageService
 
     public BlobStorageService(IConfiguration config)
     {
-        var connectionString = config["AzureBlob:ConnectionString"]
-            ?? throw new InvalidOperationException("AzureBlob:ConnectionString is not configured.");
-        var containerName = config["AzureBlob:ContainerName"] ?? "raceday-images";
+        // Uses appsettings.json (or an environment variable in Docker).
+        // Falls back to the local Azurite emulator if nothing is configured.
+        var connectionString = config["AzureBlob:ConnectionString"];
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            connectionString = "UseDevelopmentStorage=true";
+        }
+
+        var containerName = config["AzureBlob:ContainerName"];
+        if (string.IsNullOrWhiteSpace(containerName))
+        {
+            containerName = "raceday-images";
+        }
 
         // Creating the client does not contact storage yet, so the API starts even if storage is off
         _container = new BlobContainerClient(connectionString, containerName);
