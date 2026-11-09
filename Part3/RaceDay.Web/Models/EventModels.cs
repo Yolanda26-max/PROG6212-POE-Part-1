@@ -15,8 +15,6 @@ namespace RaceDay.Web.Models
         public string? Description { get; set; }
         public string EventType { get; set; } = string.Empty;
         public decimal DistanceKm { get; set; }
-
-        // Added to the API later with Blob Storage; stays null until then
         public string? BannerImageUrl { get; set; }
     }
 
@@ -51,6 +49,13 @@ namespace RaceDay.Web.Models
         [Range(0.01, 1000, ErrorMessage = "Distance must be between 0.01 and 1000 km.")]
         [Display(Name = "Distance (km)")]
         public decimal DistanceKm { get; set; }
+
+        // The image the Organiser picks (optional)
+        [Display(Name = "Banner image")]
+        public IFormFile? BannerImage { get; set; }
+
+        // The banner already saved for this event (shown on the edit page)
+        public string? ExistingBannerUrl { get; set; }
     }
 
     public class EventRequestDto

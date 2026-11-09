@@ -62,10 +62,24 @@ namespace RaceDay.Web.Controllers
 
             var result = await _api.PostAsync<EventDto>("api/events", ToRequest(model));
 
-            if (!result.Success)
+            if (!result.Success || result.Data == null)
             {
                 ModelState.AddModelError(string.Empty, result.Error ?? "We couldn't create the event.");
                 return View(model);
+            }
+
+            // The event now exists, so send the banner (if one was chosen)
+            if (model.BannerImage != null && model.BannerImage.Length > 0)
+            {
+                var upload = await _api.UploadFileAsync<EventDto>(
+                    $"api/events/{result.Data.EventId}/banner", model.BannerImage);
+
+                if (!upload.Success)
+                {
+                    TempData["Error"] = $"Event \"{model.EventName}\" was created, but the banner could not be uploaded: " +
+                                        $"{upload.Error} You can add it again by editing the event.";
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
             TempData["Success"] = $"Event \"{model.EventName}\" was created. You can now add categories to it.";
@@ -100,7 +114,8 @@ namespace RaceDay.Web.Controllers
                 Location = e.Location,
                 Description = e.Description,
                 EventType = e.EventType,
-                DistanceKm = e.DistanceKm
+                DistanceKm = e.DistanceKm,
+                ExistingBannerUrl = e.BannerImageUrl
             });
         }
 
@@ -111,14 +126,29 @@ namespace RaceDay.Web.Controllers
             model.EventId = id;
 
             if (!ModelState.IsValid)
+            {
+                await FillExistingBannerAsync(model);
                 return View(model);
+            }
 
             var result = await _api.PutAsync<EventDto>($"api/events/{id}", ToRequest(model));
 
             if (!result.Success)
             {
                 ModelState.AddModelError(string.Empty, result.Error ?? "We couldn't save your changes.");
+                await FillExistingBannerAsync(model);
                 return View(model);
+            }
+
+            if (model.BannerImage != null && model.BannerImage.Length > 0)
+            {
+                var upload = await _api.UploadFileAsync<EventDto>($"api/events/{id}/banner", model.BannerImage);
+
+                if (!upload.Success)
+                {
+                    TempData["Error"] = $"Your changes were saved, but the banner could not be uploaded: {upload.Error}";
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
             TempData["Success"] = $"Event \"{model.EventName}\" was updated.";
@@ -320,6 +350,16 @@ namespace RaceDay.Web.Controllers
             }
 
             return result.Data;
+        }
+
+        // If the edit form is shown again after an error, bring back the current banner
+        private async Task FillExistingBannerAsync(EventFormViewModel model)
+        {
+            var current = await _api.GetAsync<EventDto>($"api/events/{model.EventId}");
+            if (current.Success && current.Data != null)
+            {
+                model.ExistingBannerUrl = current.Data.BannerImageUrl;
+            }
         }
 
         private async Task<ManageCategoriesViewModel> BuildCategoriesModelAsync(EventDto ev)
