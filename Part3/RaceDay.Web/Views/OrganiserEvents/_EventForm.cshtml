@@ -43,3 +43,20 @@
     <textarea asp-for="Description" class="form-control" rows="4"></textarea>
     <span asp-validation-for="Description" class="text-danger"></span>
 </div>
+
+<div class="mb-4">
+    <label asp-for="BannerImage" class="form-label"></label>
+
+    @if (!string.IsNullOrEmpty(Model.ExistingBannerUrl))
+    {
+        <div class="mb-2">
+            <img src="@Model.ExistingBannerUrl" alt="Current banner" class="img-fluid rounded"
+                 style="max-height:160px;object-fit:cover;" />
+            <div class="form-text">Current banner. Choose a new image below to replace it.</div>
+        </div>
+    }
+
+    <input asp-for="BannerImage" class="form-control" type="file" accept=".jpg,.jpeg,.png,.webp" />
+    <div class="form-text">Optional. JPG, PNG or WEBP, up to 5 MB.</div>
+    <span asp-validation-for="BannerImage" class="text-danger"></span>
+</div>
