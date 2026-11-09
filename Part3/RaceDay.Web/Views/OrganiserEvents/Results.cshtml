@@ -1,0 +1,79 @@
+﻿@model RaceDay.Web.Models.ResultsEntryViewModel
+@{
+    ViewData["Title"] = "Results";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none">&larr; Back to my events</a>
+    <h1 class="mt-2 mb-0">Capture results</h1>
+    <p class="text-muted">@Model.Event.EventName &middot; @Model.Event.EventDate.ToString("dd MMM yyyy")</p>
+</div>
+
+@if (!Model.Rows.Any())
+{
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <h4>No participants to capture results for</h4>
+            <p class="text-muted mb-0">Results can be entered once participants have enrolled.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        Enter the finish time as <strong>hh:mm:ss</strong> (for example 01:45:32), then click <strong>Save</strong> on that row.
+        A finish time is required when the status is Finished.
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Participant</th>
+                            <th>Category</th>
+                            <th>Finish time</th>
+                            <th>Position</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.Rows)
+                        {
+                            <tr>
+                                <form asp-action="SaveResult" method="post">
+                                    <input type="hidden" name="eventId" value="@Model.Event.EventId" />
+                                    <input type="hidden" name="EnrolmentId" value="@r.EnrolmentId" />
+                                    <input type="hidden" name="ParticipantName" value="@r.ParticipantName" />
+                                    <input type="hidden" name="CategoryName" value="@r.CategoryName" />
+
+                                <td><strong>@r.ParticipantName</strong></td>
+                                <td>@r.CategoryName</td>
+                                <td style="min-width:130px;">
+                                    <input type="text" name="FinishTime" value="@r.FinishTime" class="form-control form-control-sm" placeholder="hh:mm:ss" />
+                                </td>
+                                <td style="min-width:90px;">
+                                    <input type="number" name="Position" value="@r.Position" min="1" class="form-control form-control-sm" />
+                                </td>
+                                <td style="min-width:120px;">
+                                    <select name="Status" class="form-select form-select-sm">
+                                        <option value="Pending" selected="@(r.Status == "Pending")">Pending</option>
+                                        <option value="Finished" selected="@(r.Status == "Finished")">Finished</option>
+                                        <option value="DNF" selected="@(r.Status == "DNF")">DNF</option>
+                                        <option value="DNS" selected="@(r.Status == "DNS")">DNS</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                                </td>
+                                </form>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}

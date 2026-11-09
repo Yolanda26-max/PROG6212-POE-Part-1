@@ -1,0 +1,110 @@
+﻿@model RaceDay.Web.Models.HomeIndexViewModel
+@{
+    ViewData["Title"] = "Upcoming events";
+    var hasFilters = !string.IsNullOrWhiteSpace(Model.Search)
+                     || !string.IsNullOrWhiteSpace(Model.EventType)
+                     || !string.IsNullOrWhiteSpace(Model.Distance);
+}
+
+<div class="rd-hero">
+    <h1>Find your next finish line</h1>
+    <p class="lead mb-0">Browse upcoming road running, walking and cycling events across South Africa.</p>
+</div>
+
+<form method="get" asp-controller="Home" asp-action="Index" class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" id="search" name="search" value="@Model.Search" class="form-control"
+                       placeholder="Event name or location" />
+            </div>
+            <div class="col-md-3">
+                <label for="eventType" class="form-label">Event type</label>
+                <select id="eventType" name="eventType" class="form-select">
+                    <option value="">All types</option>
+                    <option value="Run" selected="@(Model.EventType == "Run")">Run</option>
+                    <option value="Walk" selected="@(Model.EventType == "Walk")">Walk</option>
+                    <option value="Cycle" selected="@(Model.EventType == "Cycle")">Cycle</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="distance" class="form-label">Distance</label>
+                <select id="distance" name="distance" class="form-select">
+                    <option value="">Any distance</option>
+                    <option value="short" selected="@(Model.Distance == "short")">Up to 5 km</option>
+                    <option value="medium" selected="@(Model.Distance == "medium")">5 to 10 km</option>
+                    <option value="long" selected="@(Model.Distance == "long")">10 to 21.1 km</option>
+                    <option value="ultra" selected="@(Model.Distance == "ultra")">Over 21.1 km</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                @if (hasFilters)
+                {
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Clear</a>
+                }
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (!Model.Events.Any())
+{
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            @if (hasFilters)
+            {
+                <h4>No events match your filters</h4>
+                <p class="text-muted mb-3">Try a different search or clear the filters.</p>
+                <a asp-action="Index" class="btn btn-primary">Show all events</a>
+            }
+            else
+            {
+                <h4>No upcoming events yet</h4>
+                <p class="text-muted mb-0">Check back soon, new events are added by our organisers.</p>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <p class="text-muted">
+        Showing @Model.Events.Count of @Model.TotalBeforeFilter upcoming event@(Model.TotalBeforeFilter == 1 ? "" : "s")
+    </p>
+
+    <div class="row g-4">
+        @foreach (var e in Model.Events)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100 rd-event-card">
+                    @if (!string.IsNullOrEmpty(e.BannerImageUrl))
+                    {
+                        <img src="@e.BannerImageUrl" class="rd-event-banner" alt="Banner for @e.EventName" />
+                    }
+                    else
+                    {
+                        <div class="rd-event-banner d-flex align-items-center justify-content-center text-white fs-4 fw-bold">
+                            @e.EventType.ToUpper()
+                        </div>
+                    }
+                    <div class="card-body d-flex flex-column">
+                        <div class="mb-2">
+                            <span class="badge rd-role-badge">@e.EventType</span>
+                            <span class="badge bg-dark">@e.DistanceKm.ToString("0.##") km</span>
+                        </div>
+                        <h5 class="card-title">@e.EventName</h5>
+                        <p class="mb-1"><strong>@e.EventDate.ToString("dd MMM yyyy")</strong></p>
+                        <p class="text-muted mb-3">@e.Location</p>
+                        <a asp-controller="Events" asp-action="Details" asp-route-id="@e.EventId"
+                           class="btn btn-outline-primary mt-auto">View details</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

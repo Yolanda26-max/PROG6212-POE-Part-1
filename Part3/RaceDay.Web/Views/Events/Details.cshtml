@@ -1,0 +1,107 @@
+﻿@model RaceDay.Web.Models.EventDetailsViewModel
+@{
+    ViewData["Title"] = Model.Event.EventName;
+    var e = Model.Event;
+}
+
+<a asp-controller="Home" asp-action="Index" class="text-decoration-none">&larr; Back to events</a>
+
+<div class="card shadow-sm mt-3 mb-4 overflow-hidden">
+    @if (!string.IsNullOrEmpty(e.BannerImageUrl))
+    {
+        <img src="@e.BannerImageUrl" alt="Banner for @e.EventName" class="w-100" style="max-height:320px;object-fit:cover;" />
+    }
+    else
+    {
+        <div class="rd-hero mb-0" style="border-radius:0;">
+            <span class="badge rd-role-badge mb-2">@e.EventType</span>
+            <h1 class="mb-1">@e.EventName</h1>
+            <p class="lead mb-0">@e.EventDate.ToString("dddd, dd MMMM yyyy") &middot; @e.Location</p>
+        </div>
+    }
+
+    <div class="card-body p-4">
+        @if (!string.IsNullOrEmpty(e.BannerImageUrl))
+        {
+            <h1 class="mb-1">@e.EventName</h1>
+        }
+
+        <div class="mb-3">
+            <span class="badge rd-role-badge">@e.EventType</span>
+            <span class="badge bg-dark">@e.DistanceKm.ToString("0.##") km</span>
+            @if (Model.IsPast)
+            {
+                <span class="badge bg-secondary">Completed</span>
+            }
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-4"><div class="text-muted small">Date</div><strong>@e.EventDate.ToString("dd MMM yyyy")</strong></div>
+            <div class="col-md-4"><div class="text-muted small">Location</div><strong>@e.Location</strong></div>
+            <div class="col-md-4"><div class="text-muted small">Organised by</div><strong>@e.OrganiserName</strong></div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(e.Description))
+        {
+            <h5>About this event</h5>
+            <p style="white-space:pre-line;">@e.Description</p>
+        }
+    </div>
+</div>
+
+<h3 class="mb-3">Categories</h3>
+
+@if (!Model.Categories.Any())
+{
+    <div class="alert alert-info">The organiser hasn't added any categories yet. Check back soon.</div>
+}
+else
+{
+    @if (!Model.IsLoggedIn)
+    {
+        <div class="alert alert-warning">
+            <a asp-controller="Account" asp-action="Login">Log in</a> or
+            <a asp-controller="Account" asp-action="Register">register</a> as a Participant to enrol.
+        </div>
+    }
+    else if (!Model.IsParticipant)
+    {
+        <div class="alert alert-info">Only Participant accounts can enrol in events.</div>
+    }
+
+    <div class="row g-3">
+        @foreach (var c in Model.Categories)
+        {
+            var enrolled = Model.EnrolledCategoryIds.Contains(c.CategoryId);
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@c.CategoryName</h5>
+                        <p class="mb-1">@c.DistanceKm.ToString("0.##") km</p>
+                        <p class="fw-bold mb-3">@(c.Price == 0 ? "Free entry" : "R" + c.Price.ToString("0.00"))</p>
+
+                        <div class="mt-auto">
+                            @if (enrolled)
+                            {
+                                <span class="status-badge status-confirmed">You're enrolled</span>
+                            }
+                            else if (Model.IsParticipant && !Model.IsPast)
+                            {
+                                <form asp-controller="Events" asp-action="Enrol" method="post">
+                                    <input type="hidden" name="eventId" value="@e.EventId" />
+                                    <input type="hidden" name="categoryId" value="@c.CategoryId" />
+                                    <input type="hidden" name="categoryName" value="@c.CategoryName" />
+                                    <button type="submit" class="btn btn-primary w-100">Enter this category</button>
+                                </form>
+                            }
+                            else if (Model.IsPast)
+                            {
+                                <span class="text-muted small">This event has finished.</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,59 @@
+﻿@model RaceDay.Web.Models.EventEnrolmentsViewModel
+@{
+    ViewData["Title"] = "Enrolments";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none">&larr; Back to my events</a>
+    <h1 class="mt-2 mb-0">Enrolments</h1>
+    <p class="text-muted">@Model.Event.EventName &middot; @Model.Event.EventDate.ToString("dd MMM yyyy")</p>
+</div>
+
+@if (!Model.Enrolments.Any())
+{
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <h4>No enrolments yet</h4>
+            <p class="text-muted mb-0">Participants will appear here once they enrol in one of your categories.</p>
+        </div>
+    </div>
+}
+else
+{
+    <p class="text-muted">@Model.Enrolments.Count participant@(Model.Enrolments.Count == 1 ? "" : "s") enrolled</p>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Participant</th>
+                            <th>Category</th>
+                            <th>Enrolled on</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in Model.Enrolments)
+                        {
+                            var statusClass = e.Status.ToLower() switch
+                            {
+                                "confirmed" => "status-confirmed",
+                                "pending" => "status-pending",
+                                "cancelled" => "status-cancelled",
+                                _ => "status-pending"
+                            };
+                            <tr>
+                                <td><strong>@e.ParticipantName</strong></td>
+                                <td>@e.CategoryName</td>
+                                <td>@e.EnrolmentDate.ToString("dd MMM yyyy")</td>
+                                <td><span class="status-badge @statusClass">@e.Status</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}

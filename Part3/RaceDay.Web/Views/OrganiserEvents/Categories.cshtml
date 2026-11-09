@@ -1,0 +1,95 @@
+﻿@model RaceDay.Web.Models.ManageCategoriesViewModel
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-decoration-none">&larr; Back to my events</a>
+    <h1 class="mt-2 mb-0">Categories</h1>
+    <p class="text-muted">@Model.Event.EventName &middot; @Model.Event.EventDate.ToString("dd MMM yyyy")</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                @if (!Model.Categories.Any())
+                {
+                    <div class="text-center py-5 px-3">
+                        <h5>No categories yet</h5>
+                        <p class="text-muted mb-0">Add your first category using the form.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Distance</th>
+                                    <th>Price</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var c in Model.Categories)
+                                {
+                                    <tr>
+                                        <td><strong>@c.CategoryName</strong></td>
+                                        <td>@c.DistanceKm.ToString("0.##") km</td>
+                                        <td>@(c.Price == 0 ? "Free" : "R" + c.Price.ToString("0.00"))</td>
+                                        <td class="text-end">
+                                            <form asp-action="DeleteCategory" asp-route-id="@c.CategoryId" asp-route-eventId="@Model.Event.EventId"
+                                                  method="post" class="d-inline"
+                                                  onsubmit="return confirm('Delete this category? Any enrolments in it will be removed too.');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h5 class="mb-3">Add a category</h5>
+
+                <form asp-action="AddCategory" asp-route-id="@Model.Event.EventId" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="NewCategory.CategoryName" class="form-label"></label>
+                        <input asp-for="NewCategory.CategoryName" class="form-control" placeholder="e.g. 10km Fun Run, Under 20" />
+                        <span asp-validation-for="NewCategory.CategoryName" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label asp-for="NewCategory.DistanceKm" class="form-label"></label>
+                            <input asp-for="NewCategory.DistanceKm" class="form-control" type="number" step="0.01" />
+                            <span asp-validation-for="NewCategory.DistanceKm" class="text-danger"></span>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label asp-for="NewCategory.Price" class="form-label"></label>
+                            <input asp-for="NewCategory.Price" class="form-control" type="number" step="0.01" />
+                            <span asp-validation-for="NewCategory.Price" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Add category</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

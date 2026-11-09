@@ -1,0 +1,82 @@
+﻿@model RaceDay.Web.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-7 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="mb-1">Join RaceDay</h2>
+                <p class="text-muted mb-4">Create your account to enter events or organise them.</p>
+
+                <form asp-action="Register" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" autocomplete="name" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" autocomplete="email" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" autocomplete="new-password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ConfirmPassword" class="form-label"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Role" class="form-label">I am registering as</label>
+                        <select asp-for="Role" class="form-select" id="roleSelect">
+                            <option value="Participant">Participant (I want to enter events)</option>
+                            <option value="Organiser">Organiser (I want to run events)</option>
+                        </select>
+                        <span asp-validation-for="Role" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3" id="organiserCodeGroup" style="display:none;">
+                        <label asp-for="OrganiserCode" class="form-label"></label>
+                        <input asp-for="OrganiserCode" class="form-control" autocomplete="off" />
+                        <div class="form-text">Organisers need the secret code to register.</div>
+                        <span asp-validation-for="OrganiserCode" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Create account</button>
+                </form>
+
+                <p class="text-center mt-3 mb-0">
+                    Already registered? <a asp-action="Login">Log in</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Only show the organiser code box when "Organiser" is selected
+        const roleSelect = document.getElementById("roleSelect");
+        const codeGroup = document.getElementById("organiserCodeGroup");
+
+        function toggleCode() {
+            codeGroup.style.display = roleSelect.value === "Organiser" ? "block" : "none";
+        }
+
+        roleSelect.addEventListener("change", toggleCode);
+        toggleCode(); // run once on page load (keeps it open if the form is re-shown)
+    </script>
+}

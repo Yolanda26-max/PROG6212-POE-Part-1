@@ -1,0 +1,207 @@
+/* ============ RaceDay theme ============ */
+:root {
+    --rd-dark: #0b1f33;
+    --rd-orange: #ff5a1f;
+    --rd-orange-dark: #e04a12;
+    --rd-light: #f4f6f9;
+    --rd-green: #1e9e55;
+    --rd-amber: #f2a900;
+    --rd-red: #d63b3b;
+}
+
+html {
+    font-size: 15px;
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    background-color: var(--rd-light);
+    color: #1d2733;
+    margin-bottom: 60px;
+}
+
+h1, h2, h3, h4 {
+    font-weight: 700;
+    color: var(--rd-dark);
+}
+
+a {
+    color: var(--rd-orange-dark);
+}
+
+    a:hover {
+        color: var(--rd-orange);
+    }
+
+/* ---------- Navbar ---------- */
+.rd-navbar {
+    background-color: var(--rd-dark);
+    border-bottom: 4px solid var(--rd-orange);
+}
+
+.rd-brand {
+    font-weight: 800;
+    letter-spacing: 2px;
+    font-size: 1.4rem;
+    color: #ffffff !important;
+}
+
+    .rd-brand span {
+        color: var(--rd-orange);
+    }
+
+.rd-navbar .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+}
+
+    .rd-navbar .nav-link:hover,
+    .rd-navbar .nav-link:focus {
+        color: var(--rd-orange);
+    }
+
+.rd-navbar .navbar-text {
+    color: #ffffff;
+}
+
+.rd-role-badge {
+    background-color: var(--rd-orange);
+    color: #ffffff;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+/* ---------- Buttons ---------- */
+.btn-primary,
+.btn-rd {
+    background-color: var(--rd-orange);
+    border-color: var(--rd-orange);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+    .btn-primary:hover,
+    .btn-primary:focus,
+    .btn-rd:hover,
+    .btn-rd:focus {
+        background-color: var(--rd-orange-dark);
+        border-color: var(--rd-orange-dark);
+        color: #ffffff;
+    }
+
+.btn-outline-primary {
+    color: var(--rd-orange-dark);
+    border-color: var(--rd-orange);
+}
+
+    .btn-outline-primary:hover {
+        background-color: var(--rd-orange);
+        border-color: var(--rd-orange);
+        color: #ffffff;
+    }
+
+/* ---------- Cards ---------- */
+.card {
+    border: none;
+    border-radius: 12px;
+}
+
+    .card.shadow-sm {
+        box-shadow: 0 2px 10px rgba(11, 31, 51, 0.08) !important;
+    }
+
+.rd-event-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+    .rd-event-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(11, 31, 51, 0.15) !important;
+    }
+
+.rd-event-banner {
+    height: 160px;
+    width: 100%;
+    object-fit: cover;
+    background: linear-gradient(135deg, var(--rd-dark), #1d4466);
+    border-radius: 12px 12px 0 0;
+}
+
+.rd-stat {
+    border-left: 5px solid var(--rd-orange);
+}
+
+    .rd-stat .rd-stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--rd-dark);
+    }
+
+/* ---------- Enrolment status badges ---------- */
+.status-badge {
+    display: inline-block;
+    padding: 0.35em 0.75em;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.status-confirmed {
+    background-color: var(--rd-green);
+}
+
+.status-pending {
+    background-color: var(--rd-amber);
+    color: #1d2733;
+}
+
+.status-cancelled {
+    background-color: var(--rd-red);
+}
+
+/* ---------- Forms ---------- */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--rd-orange);
+    box-shadow: 0 0 0 0.2rem rgba(255, 90, 31, 0.2);
+}
+
+/* ---------- Tables ---------- */
+.table thead th {
+    background-color: var(--rd-dark);
+    color: #ffffff;
+    border: none;
+}
+
+/* ---------- Hero ---------- */
+.rd-hero {
+    background: linear-gradient(135deg, var(--rd-dark) 0%, #1d4466 100%);
+    color: #ffffff;
+    border-radius: 14px;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+}
+
+    .rd-hero h1 {
+        color: #ffffff;
+        font-weight: 800;
+    }
+
+    .rd-hero .lead {
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+/* ---------- Footer ---------- */
+.rd-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    line-height: 60px;
+    background-color: var(--rd-dark);
+    color: rgba(255, 255, 255, 0.75);
+    text-align: center;
+    font-size: 0.9rem;
+}

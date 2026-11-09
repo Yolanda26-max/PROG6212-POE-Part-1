@@ -1,0 +1,114 @@
+﻿@model RaceDay.Web.Models.OrganiserDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var nextEvent = Model.Events
+        .Where(r => r.Event.EventDate.Date >= DateTime.Today)
+        .OrderBy(r => r.Event.EventDate)
+        .FirstOrDefault();
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-0">Organiser dashboard</h1>
+        <p class="text-muted mb-0">Welcome back, @Model.OrganiserName.</p>
+    </div>
+    <a asp-controller="OrganiserEvents" asp-action="Create" class="btn btn-primary mt-2 mt-md-0">+ Create event</a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm rd-stat">
+                <div class="card-body">
+                    <div class="text-muted">Events created</div>
+                    <div class="rd-stat-number">@Model.TotalEvents</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm rd-stat">
+                <div class="card-body">
+                    <div class="text-muted">Total enrolments</div>
+                    <div class="rd-stat-number">@Model.TotalEnrolments</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm rd-stat">
+                <div class="card-body">
+                    <div class="text-muted">Upcoming events</div>
+                    <div class="rd-stat-number">@Model.UpcomingEvents</div>
+                    @if (nextEvent != null)
+                    {
+                        <div class="small text-muted">Next: @nextEvent.Event.EventName on @nextEvent.Event.EventDate.ToString("dd MMM yyyy")</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Events.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <h4>You haven't created any events yet</h4>
+                <p class="text-muted">Create your first event to start receiving enrolments.</p>
+                <a asp-controller="OrganiserEvents" asp-action="Create" class="btn btn-primary">Create your first event</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th class="text-center">Categories</th>
+                                <th class="text-center">Enrolments</th>
+                                <th>Manage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.Events)
+                            {
+                                var isPast = row.Event.EventDate.Date < DateTime.Today;
+                                <tr>
+                                    <td>
+                                        <strong>@row.Event.EventName</strong><br />
+                                        <span class="text-muted small">@row.Event.Location</span>
+                                    </td>
+                                    <td>
+                                        @row.Event.EventDate.ToString("dd MMM yyyy")
+                                        @if (isPast)
+                                        {
+                                            <span class="badge bg-secondary">Completed</span>
+                                        }
+                                    </td>
+                                    <td>@row.Event.EventType, @row.Event.DistanceKm.ToString("0.##") km</td>
+                                    <td class="text-center">@row.CategoryCount</td>
+                                    <td class="text-center"><strong>@row.EnrolmentCount</strong></td>
+                                    <td>
+                                        <a asp-controller="OrganiserEvents" asp-action="Edit" asp-route-id="@row.Event.EventId" class="btn btn-sm btn-outline-primary">Edit</a>
+                                        <a asp-controller="OrganiserEvents" asp-action="Categories" asp-route-id="@row.Event.EventId" class="btn btn-sm btn-outline-primary">Categories</a>
+                                        <a asp-controller="OrganiserEvents" asp-action="Enrolments" asp-route-id="@row.Event.EventId" class="btn btn-sm btn-outline-primary">Enrolments</a>
+                                        <a asp-controller="OrganiserEvents" asp-action="Results" asp-route-id="@row.Event.EventId" class="btn btn-sm btn-outline-primary">Results</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+}
