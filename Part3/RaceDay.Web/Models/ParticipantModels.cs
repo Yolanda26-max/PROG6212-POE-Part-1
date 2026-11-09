@@ -12,4 +12,19 @@
         public bool IsParticipant { get; set; }
         public bool IsPast { get; set; }
     }
+
+    // One row on the My Enrolments page
+    public class MyEnrolmentRow
+    {
+        public EnrolmentDto Enrolment { get; set; } = new();
+        public bool IsPast { get; set; }
+    }
+
+    // One row on the My Results page
+    public class MyResultRow
+    {
+        public ResultDto Result { get; set; } = new();
+        public DateTime? EventDate { get; set; }
+        public int TotalFinishers { get; set; }
+    }
 }

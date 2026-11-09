@@ -1,0 +1,78 @@
+﻿@model List<RaceDay.Web.Models.MyEnrolmentRow>
+@{
+    ViewData["Title"] = "My enrolments";
+}
+
+<h1 class="mb-1">My enrolments</h1>
+<p class="text-muted mb-4">Every event you've entered, and where each entry stands.</p>
+
+@if (!Model.Any())
+{
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <h4>You haven't enrolled in any events yet</h4>
+            <p class="text-muted">Browse upcoming events and pick a category to enter.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Browse events</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Enrolled on</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model)
+                        {
+                            var e = row.Enrolment;
+                            var statusClass = e.Status.ToLower() switch
+                            {
+                                "confirmed" => "status-confirmed",
+                                "pending" => "status-pending",
+                                "cancelled" => "status-cancelled",
+                                _ => "status-pending"
+                            };
+                            <tr>
+                                <td>
+                                    <a asp-controller="Events" asp-action="Details" asp-route-id="@e.EventId">
+                                        <strong>@e.EventName</strong>
+                                    </a>
+                                </td>
+                                <td>
+                                    @e.EventDate.ToString("dd MMM yyyy")
+                                    @if (row.IsPast)
+                                    {
+                                        <span class="badge bg-secondary">Completed</span>
+                                    }
+                                </td>
+                                <td>@e.CategoryName</td>
+                                <td>@e.EnrolmentDate.ToString("dd MMM yyyy")</td>
+                                <td><span class="status-badge @statusClass">@e.Status</span></td>
+                                <td class="text-end">
+                                    @if (!row.IsPast)
+                                    {
+                                        <form asp-action="CancelEnrolment" asp-route-id="@e.EnrolmentId" method="post" class="d-inline"
+                                              onsubmit="return confirm('Cancel your enrolment in @e.EventName?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
