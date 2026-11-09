@@ -1,0 +1,24 @@
+name: Build API and MVC
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build API (Part 2)
+        run: dotnet build Part2/RaceDay.Api/RaceDay.Api.csproj --configuration Release
+
+      - name: Build MVC (Part 3)
+        run: dotnet build Part3/RaceDay.Web/RaceDay.Web.csproj --configuration Release
