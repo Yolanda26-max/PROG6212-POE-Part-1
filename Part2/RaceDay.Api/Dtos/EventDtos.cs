@@ -35,4 +35,5 @@ public class EventResponse
     public string? Description { get; set; }
     public string EventType { get; set; } = string.Empty;
     public decimal DistanceKm { get; set; }
+    public string? BannerImageUrl { get; set; }
 }

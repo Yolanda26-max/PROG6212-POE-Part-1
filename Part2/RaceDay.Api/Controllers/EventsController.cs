@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using RaceDay.Api.Data;
 using RaceDay.Api.Dtos;
 using RaceDay.Api.Models;
+using RaceDay.Api.Services;
 
 namespace RaceDay.Api.Controllers;
 
@@ -15,10 +16,12 @@ public class EventsController : ControllerBase
     private static readonly string[] ValidEventTypes = { "Run", "Walk", "Cycle" };
 
     private readonly RaceDayDbContext _db;
+    private readonly IBlobStorageService _blobs;
 
-    public EventsController(RaceDayDbContext db)
+    public EventsController(RaceDayDbContext db, IBlobStorageService blobs)
     {
         _db = db;
+        _blobs = blobs;
     }
 
     // The user ID printed on the JWT wristband
@@ -40,7 +43,8 @@ public class EventsController : ControllerBase
         Location = e.Location,
         Description = e.Description,
         EventType = e.EventType,
-        DistanceKm = e.DistanceKm
+        DistanceKm = e.DistanceKm,
+        BannerImageUrl = e.BannerImageUrl
     };
 
     /// <summary>
@@ -175,7 +179,67 @@ public class EventsController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes an event, including its categories, enrolments and results.
+    /// Uploads (or replaces) the banner image of an event. The image is stored in Blob Storage
+    /// and its link is saved on the event. Only the Organiser who owns the event can do this.
+    /// </summary>
+    /// <response code="200">Banner saved. Returns the updated event.</response>
+    /// <response code="400">No file, wrong file type, or file larger than 5 MB.</response>
+    /// <response code="401">No valid token supplied.</response>
+    /// <response code="403">Not an Organiser, or not the Organiser who owns this event.</response>
+    /// <response code="404">The event does not exist.</response>
+    /// <response code="503">Image storage is not available right now.</response>
+    [HttpPost("{id:int}/banner")]
+    [Authorize(Roles = "Organiser")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IActionResult> UploadBanner(int id, IFormFile file)
+    {
+        var ev = await _db.Events.Include(e => e.Organiser)
+            .FirstOrDefaultAsync(e => e.EventId == id);
+
+        if (ev == null)
+        {
+            return NotFound(new { message = "Event not found." });
+        }
+
+        if (ev.OrganiserId != CurrentUserId)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new { message = "You can only change the banner of your own events." });
+        }
+
+        string newUrl;
+        try
+        {
+            newUrl = await _blobs.UploadImageAsync(file, "events");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                new { message = "Image storage is not available right now. Please try again shortly." });
+        }
+
+        var oldUrl = ev.BannerImageUrl;
+        ev.BannerImageUrl = newUrl;
+        await _db.SaveChangesAsync();
+
+        // Remove the previous banner so old images don't pile up in storage
+        await _blobs.DeleteImageAsync(oldUrl);
+
+        return Ok(ToResponse(ev));
+    }
+
+    /// <summary>
+    /// Deletes an event, including its categories, enrolments, results and banner image.
     /// Only the Organiser who created it can do this.
     /// </summary>
     /// <response code="204">Event deleted.</response>
@@ -203,8 +267,12 @@ public class EventsController : ControllerBase
                 new { message = "You can only delete your own events." });
         }
 
+        var bannerUrl = ev.BannerImageUrl;
+
         _db.Events.Remove(ev);
         await _db.SaveChangesAsync();
+
+        await _blobs.DeleteImageAsync(bannerUrl);
 
         return NoContent();
     }

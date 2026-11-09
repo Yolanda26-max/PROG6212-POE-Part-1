@@ -15,6 +15,9 @@ public class Event
     // Added for Part 2 (required by the brief): overall event distance in km
     public decimal DistanceKm { get; set; }
 
+    // Added for Part 3: link to the banner image stored in Blob Storage
+    public string? BannerImageUrl { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // The organiser who owns this event (Users 1 : M Events)

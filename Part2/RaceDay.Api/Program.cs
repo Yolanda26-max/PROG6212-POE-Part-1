@@ -37,6 +37,7 @@ builder.Services.AddAuthorization();
 
 // ---------- Our own services ----------
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>();
 
 // ---------- Controllers ----------
 builder.Services.AddControllers();

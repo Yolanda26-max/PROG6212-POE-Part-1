@@ -9,6 +9,10 @@ public class User
     public string FullName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
+
+    // Added for Part 3: link to the profile picture stored in Blob Storage
+    public string? ProfilePictureUrl { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Each user belongs to one role (Roles 1 : M Users)
