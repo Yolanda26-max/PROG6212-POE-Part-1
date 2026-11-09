@@ -3,11 +3,8 @@ using RaceDay.Web.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
-
-// Needed so ApiClient can read the session
 builder.Services.AddHttpContextAccessor();
 
-// Session: stores the JWT, role and user name after login
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -16,11 +13,8 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// ApiClient talks to the Part 2 API
 builder.Services.AddHttpClient<ApiClient>(client =>
 {
-    // Uses appsettings.json (or an environment variable in Docker),
-    // and falls back to the local API address if neither is set
     var baseUrl = builder.Configuration["ApiSettings:BaseUrl"];
     if (string.IsNullOrWhiteSpace(baseUrl))
     {
@@ -33,20 +27,13 @@ builder.Services.AddHttpClient<ApiClient>(client =>
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
+// Friendly error page for users (never raw errors)
+app.UseExceptionHandler("/Home/Error");
+app.UseStatusCodePagesWithReExecute("/Home/Error");
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
-// Must come before the controller routes
 app.UseSession();
-
 app.UseAuthorization();
 
 app.MapControllerRoute(
