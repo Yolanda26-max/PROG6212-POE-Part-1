@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RaceDay.Api.Data;
 using RaceDay.Api.Dtos;
+using RaceDay.Api.Services;
 
 namespace RaceDay.Api.Controllers;
 
@@ -13,10 +14,12 @@ namespace RaceDay.Api.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly RaceDayDbContext _db;
+    private readonly IBlobStorageService _blobs;
 
-    public UsersController(RaceDayDbContext db)
+    public UsersController(RaceDayDbContext db, IBlobStorageService blobs)
     {
         _db = db;
+        _blobs = blobs;
     }
 
     // The user ID printed on the JWT wristband
@@ -45,6 +48,7 @@ public class UsersController : ControllerBase
                 FullName = u.FullName,
                 Email = u.Email,
                 Role = u.Role!.RoleName,
+                ProfilePictureUrl = u.ProfilePictureUrl,
                 CreatedAt = u.CreatedAt
             })
             .FirstOrDefaultAsync();
@@ -93,18 +97,74 @@ public class UsersController : ControllerBase
         user.Email = email;
         await _db.SaveChangesAsync();
 
+        return Ok(await BuildProfileAsync(user));
+    }
+
+    /// <summary>
+    /// Uploads (or replaces) the profile picture of the currently logged-in user.
+    /// The image is stored in Blob Storage and its link is saved on the user.
+    /// </summary>
+    /// <response code="200">Picture saved. Returns the updated profile.</response>
+    /// <response code="400">No file, wrong file type, or file larger than 5 MB.</response>
+    /// <response code="401">No valid token supplied.</response>
+    /// <response code="404">The user no longer exists.</response>
+    /// <response code="503">Image storage is not available right now.</response>
+    [HttpPost("me/picture")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(UserProfileResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IActionResult> UploadMyPicture(IFormFile file)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == CurrentUserId);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found." });
+        }
+
+        string newUrl;
+        try
+        {
+            newUrl = await _blobs.UploadImageAsync(file, "profiles");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                new { message = "Image storage is not available right now. Please try again shortly." });
+        }
+
+        var oldUrl = user.ProfilePictureUrl;
+        user.ProfilePictureUrl = newUrl;
+        await _db.SaveChangesAsync();
+
+        // Remove the previous picture so old images don't pile up in storage
+        await _blobs.DeleteImageAsync(oldUrl);
+
+        return Ok(await BuildProfileAsync(user));
+    }
+
+    // Builds the profile response for a user
+    private async Task<UserProfileResponse> BuildProfileAsync(RaceDay.Api.Models.User user)
+    {
         var roleName = await _db.Roles
             .Where(r => r.RoleId == user.RoleId)
             .Select(r => r.RoleName)
             .FirstAsync();
 
-        return Ok(new UserProfileResponse
+        return new UserProfileResponse
         {
             UserId = user.UserId,
             FullName = user.FullName,
             Email = user.Email,
             Role = roleName,
+            ProfilePictureUrl = user.ProfilePictureUrl,
             CreatedAt = user.CreatedAt
-        });
+        };
     }
 }
