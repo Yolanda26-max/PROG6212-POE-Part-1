@@ -42,18 +42,41 @@ namespace RaceDay.Web.Services
         public Task<ApiResult<T>> DeleteAsync<T>(string url) =>
             SendAsync<T>(HttpMethod.Delete, url, null);
 
+        // Sends a file (like an image) to the API as multipart/form-data
+        public async Task<ApiResult<T>> UploadFileAsync<T>(string url, IFormFile file, string fieldName = "file")
+        {
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, url);
+                AttachToken(request);
+
+                var content = new MultipartFormDataContent();
+                var stream = file.OpenReadStream();
+                var fileContent = new StreamContent(stream);
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(
+                    string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType);
+                content.Add(fileContent, fieldName, file.FileName);
+                request.Content = content;
+
+                var response = await _http.SendAsync(request);
+                return await ReadResponseAsync<T>(response);
+            }
+            catch (HttpRequestException)
+            {
+                return Unreachable<T>();
+            }
+            catch (TaskCanceledException)
+            {
+                return TimedOut<T>();
+            }
+        }
+
         private async Task<ApiResult<T>> SendAsync<T>(HttpMethod method, string url, object? body)
         {
             try
             {
                 var request = new HttpRequestMessage(method, url);
-
-                // Attach the logged-in user's token (stored in session at login)
-                var token = _accessor.HttpContext?.Session.GetString(TokenKey);
-                if (!string.IsNullOrEmpty(token))
-                {
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                }
+                AttachToken(request);
 
                 if (body != null)
                 {
@@ -62,51 +85,70 @@ namespace RaceDay.Web.Services
                 }
 
                 var response = await _http.SendAsync(request);
-                var content = await response.Content.ReadAsStringAsync();
+                return await ReadResponseAsync<T>(response);
+            }
+            catch (HttpRequestException)
+            {
+                return Unreachable<T>();
+            }
+            catch (TaskCanceledException)
+            {
+                return TimedOut<T>();
+            }
+        }
 
-                if (response.IsSuccessStatusCode)
+        // Attach the logged-in user's token (stored in session at login)
+        private void AttachToken(HttpRequestMessage request)
+        {
+            var token = _accessor.HttpContext?.Session.GetString(TokenKey);
+            if (!string.IsNullOrEmpty(token))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+        }
+
+        private static async Task<ApiResult<T>> ReadResponseAsync<T>(HttpResponseMessage response)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                T? data = default;
+                if (!string.IsNullOrWhiteSpace(content))
                 {
-                    T? data = default;
-                    if (!string.IsNullOrWhiteSpace(content))
-                    {
-                        try { data = JsonSerializer.Deserialize<T>(content, JsonOptions); }
-                        catch (JsonException) { /* response wasn't JSON of type T; ignore */ }
-                    }
-
-                    return new ApiResult<T>
-                    {
-                        Success = true,
-                        Data = data,
-                        StatusCode = (int)response.StatusCode
-                    };
+                    try { data = JsonSerializer.Deserialize<T>(content, JsonOptions); }
+                    catch (JsonException) { /* response wasn't JSON of type T; ignore */ }
                 }
 
                 return new ApiResult<T>
                 {
-                    Success = false,
-                    Error = FriendlyError(response.StatusCode, content),
+                    Success = true,
+                    Data = data,
                     StatusCode = (int)response.StatusCode
                 };
             }
-            catch (HttpRequestException)
+
+            return new ApiResult<T>
             {
-                return new ApiResult<T>
-                {
-                    Success = false,
-                    Error = "We couldn't reach the RaceDay server. Please try again shortly.",
-                    StatusCode = 0
-                };
-            }
-            catch (TaskCanceledException)
-            {
-                return new ApiResult<T>
-                {
-                    Success = false,
-                    Error = "The server took too long to respond. Please try again.",
-                    StatusCode = 0
-                };
-            }
+                Success = false,
+                Error = FriendlyError(response.StatusCode, content),
+                StatusCode = (int)response.StatusCode
+            };
         }
+
+        private static ApiResult<T> Unreachable<T>() => new()
+        {
+            Success = false,
+            Error = "We couldn't reach the RaceDay server. Please try again shortly.",
+            StatusCode = 0
+        };
+
+        private static ApiResult<T> TimedOut<T>() => new()
+        {
+            Success = false,
+            Error = "The server took too long to respond. Please try again.",
+            StatusCode = 0
+        };
 
         // Turns API error responses into a clean message (never raw errors)
         private static string FriendlyError(System.Net.HttpStatusCode status, string content)
@@ -145,6 +187,7 @@ namespace RaceDay.Web.Services
                 System.Net.HttpStatusCode.NotFound => "We couldn't find what you were looking for.",
                 System.Net.HttpStatusCode.Conflict => "That action conflicts with existing data.",
                 System.Net.HttpStatusCode.BadRequest => "Some of the information entered isn't valid.",
+                System.Net.HttpStatusCode.ServiceUnavailable => "That service isn't available right now. Please try again shortly.",
                 _ => "Something went wrong. Please try again."
             };
         }
