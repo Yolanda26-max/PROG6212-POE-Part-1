@@ -2,7 +2,6 @@
 
 namespace RaceDay.Web.Models
 {
-    // What the API sends back
     public class ProfileDto
     {
         public int UserId { get; set; }
@@ -10,19 +9,15 @@ namespace RaceDay.Web.Models
         public string Email { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
-
-        // Added to the API later with Blob Storage; stays null until then
         public string? ProfilePictureUrl { get; set; }
     }
 
-    // What the profile form sends to the API
     public class UpdateProfileRequestDto
     {
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
     }
 
-    // The profile page form
     public class ProfileViewModel
     {
         [Required(ErrorMessage = "Please enter your full name.")]
@@ -35,7 +30,9 @@ namespace RaceDay.Web.Models
         [MaxLength(150)]
         public string Email { get; set; } = string.Empty;
 
-        // Read-only details shown on the page
+        [Display(Name = "Profile picture")]
+        public IFormFile? ProfilePicture { get; set; }
+
         public string Role { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public string? ProfilePictureUrl { get; set; }

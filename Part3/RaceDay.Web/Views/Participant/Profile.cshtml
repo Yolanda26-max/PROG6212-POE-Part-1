@@ -11,7 +11,7 @@
 }
 
 <h1 class="mb-1">My profile</h1>
-<p class="text-muted mb-4">View and update your personal information.</p>
+<p class="text-muted mb-4">View and update your personal information and profile picture.</p>
 
 <div class="row g-4">
     <div class="col-lg-4">
@@ -41,7 +41,7 @@
             <div class="card-body p-4">
                 <h5 class="mb-3">Personal information</h5>
 
-                <form asp-action="Profile" method="post" novalidate>
+                <form asp-action="Profile" method="post" enctype="multipart/form-data" novalidate>
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                     <div class="mb-3">
@@ -54,6 +54,13 @@
                         <label asp-for="Email" class="form-label"></label>
                         <input asp-for="Email" class="form-control" autocomplete="email" />
                         <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="ProfilePicture" class="form-label"></label>
+                        <input asp-for="ProfilePicture" class="form-control" type="file" accept=".jpg,.jpeg,.png,.webp" />
+                        <div class="form-text">Optional. JPG, PNG or WEBP, up to 5 MB.</div>
+                        <span asp-validation-for="ProfilePicture" class="text-danger"></span>
                     </div>
 
                     <button type="submit" class="btn btn-primary">Save changes</button>

@@ -68,7 +68,6 @@ namespace RaceDay.Web.Controllers
 
             var results = result.Data ?? new List<ResultDto>();
 
-            // Look up each event once: its date, and how many people finished
             var eventDates = new Dictionary<int, DateTime?>();
             var finisherCounts = new Dictionary<int, int>();
 
@@ -136,6 +135,18 @@ namespace RaceDay.Web.Controllers
             // Keep the name in the menu up to date
             HttpContext.Session.SetString(AccountController.NameKey, result.Data.FullName);
 
+            // Send the profile picture (if one was chosen) through the API to Blob Storage
+            if (model.ProfilePicture != null && model.ProfilePicture.Length > 0)
+            {
+                var upload = await _api.UploadFileAsync<ProfileDto>("api/users/me/picture", model.ProfilePicture);
+
+                if (!upload.Success)
+                {
+                    TempData["Error"] = $"Your details were saved, but the picture could not be uploaded: {upload.Error}";
+                    return RedirectToAction(nameof(Profile));
+                }
+            }
+
             TempData["Success"] = "Your profile was updated.";
             return RedirectToAction(nameof(Profile));
         }
@@ -151,7 +162,6 @@ namespace RaceDay.Web.Controllers
             ProfilePictureUrl = p.ProfilePictureUrl
         };
 
-        // If the form is shown again after an error, the read-only parts need refilling
         private async Task FillReadOnlyDetailsAsync(ProfileViewModel model)
         {
             var current = await _api.GetAsync<ProfileDto>("api/users/me");
