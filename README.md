@@ -40,3 +40,93 @@ The video walks through the planning documents, the ERD design decisions, the en
 Part 2 - Build and Test API
 
 <img width="1873" height="648" alt="ci-green-build" src="https://github.com/user-attachments/assets/b74da17b-dff4-4098-a5ba-c467629f4631" />
+
+
+Part 3
+# RaceDay (PROG6212 POE)
+
+RaceDay is an event management system for South African road running, walking and cycling events.
+
+- **Part2/RaceDay.Api**: ASP.NET Core Web API (JWT authentication, SQL Server, Azure Blob Storage for images)
+- **Part3/RaceDay.Web**: ASP.NET Core MVC front end that consumes the API (session-based login, Organiser and Participant interfaces)
+
+## Features
+- Register and log in as an Organiser (needs the organiser code) or a Participant
+- Organisers: dashboard, create/edit/delete events with banner images, categories, view enrolments, capture results
+- Participants: browse and filter events, view details, enrol in a category, My Enrolments, My Results, Profile with picture
+
+## Run the application
+
+1. Start the Azure Blob Storage emulator (Azurite):
+
+```
+azurite --silent --location C:\azurite --blobPort 10000
+```
+
+2. Start the API on http://localhost:5065:
+
+```
+cd Part2/RaceDay.Api
+dotnet run --launch-profile http
+```
+
+3. Build and run the MVC app in Docker from `Part3/RaceDay.Web`:
+
+```
+docker build -t raceday-web .
+docker run --rm -p 8080:8080 raceday-web
+```
+
+4. Open http://localhost:8080
+
+Organiser registration code: `RACEDAY-ORG-2026`
+
+## Notes
+- Blob Storage uses the Azurite emulator because an Azure subscription was not available. Only the connection string in `Part2/RaceDay.Api/appsettings.json` needs to change to use a real Azure storage account.
+- The MVC app never accesses the database or Azure directly. All data and file handling goes through the Part 2 API.
+
+## Video
+YouTube (unlisted):# RaceDay (PROG6212 POE)
+
+RaceDay is an event management system for South African road running, walking and cycling events.
+
+- **Part2/RaceDay.Api**: ASP.NET Core Web API (JWT authentication, SQL Server, Azure Blob Storage for images)
+- **Part3/RaceDay.Web**: ASP.NET Core MVC front end that consumes the API (session-based login, Organiser and Participant interfaces)
+
+## Features
+- Register and log in as an Organiser (needs the organiser code) or a Participant
+- Organisers: dashboard, create/edit/delete events with banner images, categories, view enrolments, capture results
+- Participants: browse and filter events, view details, enrol in a category, My Enrolments, My Results, Profile with picture
+
+## Run the application
+
+1. Start the Azure Blob Storage emulator (Azurite):
+
+```
+azurite --silent --location C:\azurite --blobPort 10000
+```
+
+2. Start the API on http://localhost:5065:
+
+```
+cd Part2/RaceDay.Api
+dotnet run --launch-profile http
+```
+
+3. Build and run the MVC app in Docker from `Part3/RaceDay.Web`:
+
+```
+docker build -t raceday-web .
+docker run --rm -p 8080:8080 raceday-web
+```
+
+4. Open http://localhost:8080
+
+Organiser registration code: `RACEDAY-ORG-2026`
+
+## Notes
+- Blob Storage uses the Azurite emulator because an Azure subscription was not available. Only the connection string in `Part2/RaceDay.Api/appsettings.json` needs to change to use a real Azure storage account.
+- The MVC app never accesses the database or Azure directly. All data and file handling goes through the Part 2 API.
+
+## Video
+YouTube (unlisted): PASTE LINK HERE
