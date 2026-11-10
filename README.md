@@ -129,4 +129,4 @@ Organiser registration code: `RACEDAY-ORG-2026`
 - The MVC app never accesses the database or Azure directly. All data and file handling goes through the Part 2 API.
 
 ## Video
-YouTube (unlisted): PASTE LINK HERE
+YouTube (unlisted): https://youtu.be/gB0dreMeDUg 
